@@ -12,6 +12,30 @@ const books = [
   },
 ];
 
+const articles = [
+  {
+    title: 'Sams Latex Workshop',
+    summary: 'A workshop about LaTeX',
+    body: 'Gonna teach you some stuff',
+    isPublic: true
+  },
+  {
+    title: 'Top Secret NASA Project',
+    summary: 'A top secret article about NASA',
+    body: 'This is all top secret',
+    isPublic: false
+  },
+];
+
+getArticles = () => {
+    return [{
+        title: 'test',
+        summary: 'lol',
+        body: 'lel',
+        isPublic: true
+    }]
+}
+
 // Define schema (collection of type definitions)
 const typeDefs = gql`
     # Comments in GraphQL strings (such as this one) start with the hash (#) symbol.
@@ -36,11 +60,21 @@ const typeDefs = gql`
         author: [String]
     }
 
+    # Hub test
+    type Article {
+        title: String
+        summary: String
+        body: String
+        isPublic: Boolean
+    }
+
     # The Query type defines exactly which GraphQL queries (i.e., read operations) clients can execute against your data graph. It resembles an object type, but its name is always Query.
     # Each field of the Query type defines the name and return type of a different supported query. The Query type for our example schema might resemble the following:e
     type Query {
         books: [Book]
+        articles: [Article]
     }
+
 
     # Define Mutations here
     type Mutation {
@@ -66,6 +100,7 @@ const typeDefs = gql`
 const resolvers = {
     Query: {
         books: () => books,
+        articles: () => getArticles()
     },
 };
 
@@ -82,3 +117,10 @@ const server = new ApolloServer({ typeDefs, resolvers });
 server.listen().then(({ url }) => {
     console.log(`🚀  Server ready at ${url}`);
 });
+
+
+// Method to call external GraphQL API/return response
+// https://www.apollographql.com/docs/apollo-server/data/data-sources/
+callExternal= (url, query) => {
+    return "external data";
+}
