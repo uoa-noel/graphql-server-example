@@ -3,6 +3,9 @@ const { HttpLink } = require('apollo-link-http');
 const { introspectSchema , makeRemoteExecutableSchema, mergeSchemas } = require('graphql-tools');
 const fetch = require('node-fetch');
 
+/**
+ * Define constants
+ */
 const link = new HttpLink({ uri: 'https://api.spacex.land/graphql', fetch });
 
 getContentfulSchema = async() => {
@@ -16,10 +19,13 @@ getContentfulSchema = async() => {
     return executableSchema
 }
 
+/**
+ * Set up the schemas and initialize the server
+ */
 initialize = async () => {
     contentfulSchema = await getContentfulSchema();
-    console.log('Schema loaded...')
 
+    // Load all schemas (remote and local) here
     const schema = mergeSchemas({
         schemas: [contentfulSchema],
     });
@@ -35,8 +41,3 @@ initialize = async () => {
 }
 
 initialize();
-// const schema =  getContentfulSchema();
-
-// const server = new ApolloServer({
-//     getContentfulSchema()
-// });
