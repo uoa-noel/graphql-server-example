@@ -1,6 +1,6 @@
 const { ApolloServer, gql } = require('apollo-server');
 const { HttpLink } = require('apollo-link-http');
-const { introspectSchema , makeRemoteExecutableSchema, mergeSchemas, AuthenticationError } = require('graphql-tools');
+const { introspectSchema, makeExecutableSchema, makeRemoteExecutableSchema, mergeSchemas, AuthenticationError } = require('graphql-tools');
 const fetch = require('node-fetch');
 
 // Define local schema
@@ -37,6 +37,11 @@ const localResolvers = {
     }
 }
 
+const localSchema = makeExecutableSchema({
+    typeDefs: localTypeDefs,
+    resolvers: localResolvers,
+});
+
 /*=================== END LOCAL SCHEMA =======================*/
 
 // Load a remote schema and set up the http-link
@@ -68,10 +73,7 @@ initialize = async () => {
         schemas: [
             spacexSchema,
             countriesSchema,
-            localTypeDefs
-        ],
-        resolvers: [
-            localResolvers
+            localSchema
         ]
 });
 
