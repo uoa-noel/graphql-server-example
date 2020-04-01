@@ -2,26 +2,42 @@ const { ApolloServer, gql } = require('apollo-server');
 const { HttpLink } = require('apollo-link-http');
 const { introspectSchema, makeExecutableSchema, makeRemoteExecutableSchema, mergeSchemas, AuthenticationError } = require('graphql-tools');
 const fetch = require('node-fetch');
+const { AuthDirective } = require('./auth-directive');
 
 // Define local schema
 const books = [
   {
     title: 'Harry Potter and the Chamber of Secrets',
     author: 'J.K. Rowling',
+    isPublic: true
   },
   {
     title: 'Jurassic Park',
     author: 'Michael Crichton',
+    isPublic: false
   },
 ];
 
 /*======================= LOCAL SCHEMA =======================*/
 
-// Define local schema
+directive @auth(
+  requires: Role = ADMIN,
+) on OBJECT | FIELD_DEFINITION
+
+enum Role {
+  ADMIN
+  REVIEWER
+  USER
+  UNKNOWN
+}
+
+
+// Local type definitions
 const localTypeDefs = gql`
     type Book {
         title: String
-        author: String
+        author: String @auth()
+        isPublic: Boolean!
     }
 
     # The Query type defines exactly which GraphQL queries (i.e., read operations) clients can execute against your data graph. It resembles an object type, but its name is always Query.
@@ -31,15 +47,20 @@ const localTypeDefs = gql`
     }
 `;
 
+// Local resolvers
 const localResolvers = {
     Query: {
         books: () => books,
     }
 }
 
+// Join our local resolvers and typeDefs to create a schema
 const localSchema = makeExecutableSchema({
     typeDefs: localTypeDefs,
     resolvers: localResolvers,
+    schemaDirectives: {
+        auth: AuthDirective
+    }
 });
 
 /*=================== END LOCAL SCHEMA =======================*/
@@ -75,7 +96,7 @@ initialize = async () => {
             countriesSchema,
             localSchema
         ]
-});
+    });
 
     // Create our ApolloServer object, and pass our merged schemas
     const server = new ApolloServer({
