@@ -4,18 +4,28 @@ const { makeExecutableSchema } = require('graphql-tools');
 
 const articles = [
   {
-    title: 'Sams Latex Workshop',
-    summary: 'A workshop about LaTeX',
     body: 'Gonna teach you some stuff',
     isPublic: true
   },
   {
-    title: 'Top Secret NASA Project',
-    summary: 'A top secret article about NASA',
     body: 'This is all top secret',
     isPublic: false
   },
 ];
+
+const contentItems = [
+    {
+        title: 'Sams Latex Workshop',
+        summary: 'A workshop about LaTeX',
+        article: articles[0]
+    },
+    {
+        title: 'Top Secret NASA Project',
+        summary: 'A top secret article about NASA',
+        article: articles[1]
+    }
+]
+
 
 // Define schema (collection of type definitions)
 const typeDefs = gql`
@@ -29,14 +39,19 @@ const typeDefs = gql`
         STAFF
     }
 
-    type Article @auth {
+    type ContentItem {
         title: String
         summary: String
+        article: Article
+    }
+
+    type Article @auth {
         body: String 
         isPublic: Boolean
     }
 
     type Query {
+        contentItems: [ContentItem]
         articles: [Article]
     }
 
@@ -45,10 +60,8 @@ const typeDefs = gql`
 // Define resolvers (define the technique for fetching the types defined in our schema)
 const resolvers = {
     Query: {
-        articles: (parent, args, context) => { 
-            // console.log('context', context) // Can access logged in user here
-            return articles 
-        }
+        contentItems: (parent, args, context) => { return contentItems },
+        articles: (parent, args, context) => { return articles }
     },
 };
 
@@ -66,6 +79,7 @@ const server = new ApolloServer({
     schema,
     context: ({ req }) => {
         user = { upi: 'skav012' }; // Get session here
+        user = null;
         return  { user };
     }
 });

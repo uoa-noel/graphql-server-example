@@ -29,8 +29,6 @@ class AuthDirective extends SchemaDirectiveVisitor {
 
         const fields = objectType.getFields();
 
-
-
         Object.keys(fields).forEach(fieldName => {
             console.log(`Called on field ${fieldName}`)
             const field = fields[fieldName];
@@ -45,26 +43,6 @@ class AuthDirective extends SchemaDirectiveVisitor {
                 // Only return data if the isPublic field is true
                 if(user || args[0]['isPublic']) return resolve.apply(this, args);
             
-                // console.log(objectType._requiredAuthRole)
-
-                // console.log('authdirective context: ', JSON.stringify(this.context));
-                // Get the required Role from the field first, falling back
-                // to the objectType if no Role is required by the field:
-                // const requiredRole =
-                //     field._requiredAuthRole ||
-                //     objectType._requiredAuthRole;
-
-                // if (!requiredRole) {
-                //     return resolve.apply(this, args);
-                // }
-
-                // const context = args[2];
-                // const user = await getUser(context.headers.authToken);
-                // if (!user.hasRole(requiredRole)) {
-                //     throw new Error("not authorized");
-                // }
-
-                // return resolve.apply(this, args);
             };
         });
     }
