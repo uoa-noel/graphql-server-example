@@ -31,10 +31,10 @@ const typeDefs = gql`
         UNKNOWN
     }
 
-    type Article @auth(requires: ADMIN){
+    type Article {
         title: String
         summary: String
-        body: String @auth(requires: ADMIN)
+        body: String @auth
         isPublic: Boolean
     }
 
@@ -44,10 +44,10 @@ const typeDefs = gql`
 
 `;
 
-// Define resolvers (define the technique for teching the types defined in our schema)
+// Define resolvers (define the technique for fetching the types defined in our schema)
 const resolvers = {
     Query: {
-        articles: () => articles,
+        articles: () => articles
     },
 };
 
@@ -57,14 +57,16 @@ const resolvers = {
 
 const schema = makeExecutableSchema({
     typeDefs,
+    resolvers,
     schemaDirectives: {
         auth: AuthDirective
     }
 });
 
 const server = new ApolloServer({ 
-    typeDefs,
-    resolvers,
+    schema
+    // typeDefs,
+    // resolvers,
 });
 
 // The 'listen' method launches a web server.

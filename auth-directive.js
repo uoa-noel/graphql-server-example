@@ -17,7 +17,7 @@ class AuthDirective extends SchemaDirectiveVisitor {
     // also receive a details object that provides information about
     // the parent and grandparent types.
     visitFieldDefinition(field, details) {
-        console.log('visited field')
+        console.log(`field: ${JSON.stringify(field)}, details: ${JSON.stringify(details)}`)
         this.ensureFieldsWrapped(details.objectType);
         field._requiredAuthRole = this.args.requires;
     }
@@ -30,29 +30,33 @@ class AuthDirective extends SchemaDirectiveVisitor {
         const fields = objectType.getFields();
 
         Object.keys(fields).forEach(fieldName => {
-            console.log('yo?')
+            console.log(`Called on field ${fieldName}`)
             const field = fields[fieldName];
             const { resolve = defaultFieldResolver } = field;
 
             field.resolve = async function (...args) {
+                console.log('Field.resolve called with args: ', JSON.stringify(...args));
+
+                // Only return data if the isPublic field is true
+                if(args[0]['isPublic']) return resolve.apply(this, args);
+            
                 // Get the required Role from the field first, falling back
                 // to the objectType if no Role is required by the field:
-                console.log('wee')
-                const requiredRole =
-                    field._requiredAuthRole ||
-                    objectType._requiredAuthRole;
+                // const requiredRole =
+                //     field._requiredAuthRole ||
+                //     objectType._requiredAuthRole;
 
-                if (!requiredRole) {
-                    return resolve.apply(this, args);
-                }
+                // if (!requiredRole) {
+                //     return resolve.apply(this, args);
+                // }
 
-                const context = args[2];
-                const user = await getUser(context.headers.authToken);
-                if (!user.hasRole(requiredRole)) {
-                    throw new Error("not authorized");
-                }
+                // const context = args[2];
+                // const user = await getUser(context.headers.authToken);
+                // if (!user.hasRole(requiredRole)) {
+                //     throw new Error("not authorized");
+                // }
 
-                return resolve.apply(this, args);
+                // return resolve.apply(this, args);
             };
         });
     }
