@@ -22,19 +22,17 @@ const typeDefs = gql`
 
     directive @auth(
         requires: Role = USER,
-    ) on OBJECT | FIELD_DEFINITION
+    ) on OBJECT
 
     enum Role {
-        ADMIN
-        REVIEWER
         USER
-        UNKNOWN
+        STAFF
     }
 
-    type Article {
+    type Article @auth {
         title: String
         summary: String
-        body: String @auth
+        body: String 
         isPublic: Boolean
     }
 
@@ -47,14 +45,15 @@ const typeDefs = gql`
 // Define resolvers (define the technique for fetching the types defined in our schema)
 const resolvers = {
     Query: {
-        articles: () => articles
+        articles: (parent, args, context) => { 
+            // console.log('context', context) // Can access logged in user here
+            return articles 
+        }
     },
 };
 
-
 // The ApolloServer constructor requires two parameters: your schema
 // definition and your set of resolvers.
-
 const schema = makeExecutableSchema({
     typeDefs,
     resolvers,
@@ -64,9 +63,11 @@ const schema = makeExecutableSchema({
 });
 
 const server = new ApolloServer({ 
-    schema
-    // typeDefs,
-    // resolvers,
+    schema,
+    context: ({ req }) => {
+        user = { upi: 'skav012' }; // Get session here
+        return  { user };
+    }
 });
 
 // The 'listen' method launches a web server.

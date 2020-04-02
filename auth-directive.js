@@ -7,8 +7,7 @@ const {
 
 class AuthDirective extends SchemaDirectiveVisitor {
     visitObject(type) {
-        console.log('visited object')
-        console.log(this.args.requires)
+        console.log(`Object of type: ${type} requires role: ${this.args.requires}`)
         this.ensureFieldsWrapped(type);
         type._requiredAuthRole = this.args.requires;
     }
@@ -24,10 +23,13 @@ class AuthDirective extends SchemaDirectiveVisitor {
 
     ensureFieldsWrapped(objectType) {
         // Mark the GraphQLObjectType object to avoid re-wrapping:
+        console.log('ensureFieldsWrapped() called on objectType:', objectType)
         if (objectType._authFieldsWrapped) return;
         objectType._authFieldsWrapped = true;
 
         const fields = objectType.getFields();
+
+
 
         Object.keys(fields).forEach(fieldName => {
             console.log(`Called on field ${fieldName}`)
@@ -35,11 +37,17 @@ class AuthDirective extends SchemaDirectiveVisitor {
             const { resolve = defaultFieldResolver } = field;
 
             field.resolve = async function (...args) {
+                const { user } = args[2];
+
                 console.log('Field.resolve called with args: ', JSON.stringify(...args));
+                console.log('Field.resolve called by user: ', JSON.stringify(user));
 
                 // Only return data if the isPublic field is true
-                if(args[0]['isPublic']) return resolve.apply(this, args);
+                if(user || args[0]['isPublic']) return resolve.apply(this, args);
             
+                // console.log(objectType._requiredAuthRole)
+
+                // console.log('authdirective context: ', JSON.stringify(this.context));
                 // Get the required Role from the field first, falling back
                 // to the objectType if no Role is required by the field:
                 // const requiredRole =
